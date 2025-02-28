@@ -1,1 +1,2 @@
 streamlit
+cx_oracle

@@ -1,14 +1,14 @@
 import streamlit as st
 import cx_Oracle
 
-# Fungsi untuk koneksi ke Oracle DB
+# Fungsi untuk koneksi ke Oracle DB menggunakan TNS
 def get_oracle_connection():
     try:
-        # Masukkan konfigurasi koneksi sesuai dengan database Anda
+        # Gunakan alias TNS 'XE' yang sudah didefinisikan di tnsnames.ora
         conn = cx_Oracle.connect(
-            user="your_username",          # Ganti dengan username Anda
-            password="your_password",      # Ganti dengan password Anda
-            dsn="hostname:port/service_name"  # Ganti dengan hostname, port, dan service name DB
+            user="KAFTABLEAU",          # Ganti dengan username Anda
+            password="KAFTABLEAU!",      # Ganti dengan password Anda
+            dsn="XE"                       # Alias TNS yang didefinisikan di tnsnames.ora
         )
         return conn
     except cx_Oracle.DatabaseError as e:

@@ -1,28 +1,33 @@
 import streamlit as st
 import pandas as pd
-from sqlalchemy import create_engine
+import cx_Oracle
 
-# Fungsi untuk membuat koneksi ke database Oracle menggunakan SQLAlchemy
+# Fungsi untuk membuat koneksi ke database Oracle
 def connect_to_oracle():
     try:
-        engine = create_engine('oracle+oracledb://KAFTABLEAU:KAFTABLEAU!@KAF-Tableau.kaf.co.id:1521/XE')
-        return engine
-    except Exception as e:
+        # Buat DSN dari informasi yang ada
+        dsn_tns = cx_Oracle.makedsn('KAF-Tableau.kaf.co.id', '1521', service_name='XE')
+        # Menghubungkan ke database
+        connection = cx_Oracle.connect(user='KAFTABLEAU', password='KAFTABLEAU!', dsn=dsn_tns)
+        return connection
+    except cx_Oracle.DatabaseError as e:
         st.error(f"Database connection error: {e}")
         return None
 
 # Fungsi untuk mengambil data dari tabel di Oracle
 def fetch_data_from_oracle(query):
-    engine = connect_to_oracle()
-    if engine is None:
+    conn = connect_to_oracle()
+    if conn is None:
         return None
     
     try:
-        df = pd.read_sql(query, engine)
+        df = pd.read_sql(query, conn)
         return df
-    except Exception as e:
+    except cx_Oracle.DatabaseError as e:
         st.error(f"Error fetching data: {e}")
         return None
+    finally:
+        conn.close()
 
 # Fungsi utama Streamlit
 def main():
@@ -36,6 +41,7 @@ def main():
             df = fetch_data_from_oracle(query)
             if df is not None:
                 st.write("Data yang diambil:")
+                # Tampilkan data dalam tabel
                 st.dataframe(df)
             else:
                 st.warning("Tidak ada data yang diambil.")

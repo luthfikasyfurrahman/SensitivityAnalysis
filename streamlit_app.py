@@ -1,51 +1,41 @@
 import streamlit as st
-import pandas as pd
 import cx_Oracle
 
-# Fungsi untuk membuat koneksi ke database Oracle
-def connect_to_oracle():
+# Fungsi untuk koneksi ke Oracle DB
+def get_oracle_connection():
     try:
-        # Buat DSN dari informasi yang ada
-        dsn_tns = cx_Oracle.makedsn('KAF-Tableau.kaf.co.id', '1521', service_name='XE')
-        # Menghubungkan ke database
-        connection = cx_Oracle.connect(user='KAFTABLEAU', password='KAFTABLEAU!', dsn=dsn_tns)
-        return connection
+        # Masukkan konfigurasi koneksi sesuai dengan database Anda
+        conn = cx_Oracle.connect(
+            user="your_username",          # Ganti dengan username Anda
+            password="your_password",      # Ganti dengan password Anda
+            dsn="hostname:port/service_name"  # Ganti dengan hostname, port, dan service name DB
+        )
+        return conn
     except cx_Oracle.DatabaseError as e:
-        st.error(f"Database connection error: {e}")
+        st.error(f"Error: {str(e)}")
         return None
 
-# Fungsi untuk mengambil data dari tabel di Oracle
-def fetch_data_from_oracle(query):
-    conn = connect_to_oracle()
-    if conn is None:
-        return None
-    
-    try:
-        df = pd.read_sql(query, conn)
-        return df
-    except cx_Oracle.DatabaseError as e:
-        st.error(f"Error fetching data: {e}")
-        return None
-    finally:
+# Fungsi untuk mengambil data dari database
+def get_data_from_oracle():
+    conn = get_oracle_connection()
+    if conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM your_table")  # Ganti dengan query Anda
+        data = cursor.fetchall()  # Mengambil semua data
+        cursor.close()
         conn.close()
+        return data
+    else:
+        return []
 
-# Fungsi utama Streamlit
-def main():
-    st.title("Koneksi ke Oracle Database")
+# Menampilkan data di Streamlit
+st.title('Streamlit dengan Koneksi Oracle DB')
 
-    # Input untuk query SQL
-    query = st.text_area("Masukkan query SQL:", "SELECT * FROM RM_COMMODITY_PRICE WHERE ROWNUM <= 10")
+data = get_data_from_oracle()
 
-    if st.button("Ambil Data"):
-        if query:
-            df = fetch_data_from_oracle(query)
-            if df is not None:
-                st.write("Data yang diambil:")
-                # Tampilkan data dalam tabel
-                st.dataframe(df)
-            else:
-                st.warning("Tidak ada data yang diambil.")
-
-# Jalankan aplikasi
-if __name__ == "__main__":
-    main()
+if data:
+    # Menampilkan data dalam bentuk tabel di Streamlit
+    st.write("Data dari Oracle DB:")
+    st.write(data)
+else:
+    st.write("Tidak ada data atau gagal menghubungkan ke DB")

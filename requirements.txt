@@ -1,3 +1,4 @@
+sqlalchemy
+oracledb
 streamlit
-cx_oracle
 pandas

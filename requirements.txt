@@ -1,4 +1,4 @@
-streamlit==1.16.0
-sqlalchemy==2.0.0
-cx_Oracle==8.3.0
-pandas==1.5.3
+streamlit
+sqlalchemy
+cx_Oracle
+pandas

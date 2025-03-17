@@ -1,7 +1,6 @@
 import streamlit as st
 from sqlalchemy import create_engine
 import pandas as pd
-import cx_oracle
 
 # Fungsi untuk membuat koneksi ke Oracle DB menggunakan SQLAlchemy
 def get_oracle_connection():

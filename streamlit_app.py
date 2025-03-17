@@ -8,7 +8,7 @@ def get_oracle_connection():
         conn = cx_Oracle.connect(
             user="KAFTABLEAU",          # Ganti dengan username Anda
             password="KAFTABLEAU!",      # Ganti dengan password Anda
-            dsn="XE"                       # Alias TNS yang didefinisikan di tnsnames.ora
+            dsn="KAF-Tableau.kaf.co.id:1521/XE"                       # Alias TNS yang didefinisikan di tnsnames.ora
         )
         return conn
     except cx_Oracle.DatabaseError as e:

@@ -1,41 +1,44 @@
 import streamlit as st
-import cx_Oracle
+from sqlalchemy import create_engine
+import pandas as pd
 
-# Fungsi untuk koneksi ke Oracle DB menggunakan TNS
+# Fungsi untuk membuat koneksi ke Oracle DB menggunakan SQLAlchemy
 def get_oracle_connection():
     try:
-        # Gunakan alias TNS 'XE' yang sudah didefinisikan di tnsnames.ora
-        conn = cx_Oracle.connect(
-            user="KAFTABLEAU",          # Ganti dengan username Anda
-            password="KAFTABLEAU!",      # Ganti dengan password Anda
-            dsn="KAF-Tableau.kaf.co.id:1521/XE"                       # Alias TNS yang didefinisikan di tnsnames.ora
+        # Format koneksi dengan SQLAlchemy menggunakan cx_Oracle
+        engine = create_engine(
+            'oracle+cx_oracle://KAFTABLEAU:KAFTABLEAU!@KAF-Tableau.kaf.co.id:1521/XE'
         )
-        return conn
-    except cx_Oracle.DatabaseError as e:
-        st.error(f"Error: {str(e)}")
+        return engine
+    except Exception as e:
+        st.error(f"Error saat koneksi: {e}")
         return None
 
 # Fungsi untuk mengambil data dari database
 def get_data_from_oracle():
-    conn = get_oracle_connection()
-    if conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM your_table")  # Ganti dengan query Anda
-        data = cursor.fetchall()  # Mengambil semua data
-        cursor.close()
-        conn.close()
-        return data
+    engine = get_oracle_connection()
+    if engine:
+        try:
+            # Query untuk mengambil data
+            query = "SELECT * FROM your_table"  # Ganti dengan query yang sesuai
+            # Menggunakan pandas untuk membaca data
+            df = pd.read_sql(query, engine)
+            return df
+        except Exception as e:
+            st.error(f"Error saat mengambil data: {e}")
+            return None
     else:
-        return []
+        return None
 
 # Menampilkan data di Streamlit
-st.title('Streamlit dengan Koneksi Oracle DB')
+st.title('Streamlit dengan SQLAlchemy dan Koneksi Oracle DB')
 
+# Ambil data dari database
 data = get_data_from_oracle()
 
-if data:
+if data is not None and not data.empty:
     # Menampilkan data dalam bentuk tabel di Streamlit
     st.write("Data dari Oracle DB:")
-    st.write(data)
+    st.dataframe(data)  # Menampilkan data dalam bentuk dataframe
 else:
     st.write("Tidak ada data atau gagal menghubungkan ke DB")

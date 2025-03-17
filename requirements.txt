@@ -2,3 +2,4 @@ sqlalchemy
 oracledb
 streamlit
 pandas
+cx_oracle

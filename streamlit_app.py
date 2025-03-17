@@ -20,7 +20,7 @@ def get_data_from_oracle():
     if engine:
         try:
             # Query untuk mengambil data
-            query = "SELECT * FROM your_table"  # Ganti dengan query yang sesuai
+            query = "SELECT * FROM hasilmodel"  # Ganti dengan query yang sesuai
             # Menggunakan pandas untuk membaca data
             df = pd.read_sql(query, engine)
             return df

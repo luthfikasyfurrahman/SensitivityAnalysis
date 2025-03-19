@@ -1,44 +1,44 @@
 import streamlit as st
-from sqlalchemy import create_engine
+import cx_Oracle
 import pandas as pd
 
-# Fungsi untuk membuat koneksi ke Oracle DB menggunakan SQLAlchemy
-def get_oracle_connection():
+# Konek ke DB
+def connect_to_oracle():
     try:
-        # Format koneksi dengan SQLAlchemy menggunakan cx_Oracle
-        engine = create_engine(
-            'oracle+cx_oracle://KAFTABLEAU:KAFTABLEAU!@KAF-Tableau.kaf.co.id:1521/XE'
-        )
-        return engine
-    except Exception as e:
-        st.error(f"Error saat koneksi: {e}")
+        dsn_tns = cx_Oracle.makedsn('KAF-Tableau.kaf.co.id', '1521', service_name='XE')
+        connection = cx_Oracle.connect(user='KAFTABLEAU', password='KAFTABLEAU!', dsn=dsn_tns)
+        return connection
+    except cx_Oracle.DatabaseError as e:
+        print(f"Database connection error: {e}")
         return None
+    
+# Ambil Value Commodity
+def get_commodities():
+    conn = connect_to_oracle()
+    if conn is None:
+        return []
+    try:
+        query = "SELECT DISTINCT commodity FROM RM_COMMODITY_PRICE"
+        df = pd.read_sql(query, conn)
+        return df['COMMODITY'].tolist()
+    except cx_Oracle.DatabaseError as e:
+        print(f"Error fetching commodities: {e}")
+        return []
+    finally:
+        conn.close()
 
-# Fungsi untuk mengambil data dari database
-def get_data_from_oracle():
-    engine = get_oracle_connection()
-    if engine:
-        try:
-            # Query untuk mengambil data
-            query = "SELECT * FROM hasilmodel"  # Ganti dengan query yang sesuai
-            # Menggunakan pandas untuk membaca data
-            df = pd.read_sql(query, engine)
-            return df
-        except Exception as e:
-            st.error(f"Error saat mengambil data: {e}")
-            return None
-    else:
-        return None
+# Ambil data dari DB
+commodities = get_commodities()
 
-# Menampilkan data di Streamlit
-st.title('Streamlit dengan SQLAlchemy dan Koneksi Oracle DB')
+# Menampilkan inputan dropdown untuk x1 dan x2
+x1 = st.selectbox("Pilih Commodity untuk x1:", commodities)
+x2 = st.selectbox("Pilih Commodity untuk x2:", commodities)
 
-# Ambil data dari database
-data = get_data_from_oracle()
+# Fungsi untuk menampilkan output ketika tombol diklik
+def tampilkan_output():
+    # Menampilkan output berdasarkan x1 dan x2
+    st.write(f"Output: x1 = {x1}, x2 = {x2}")
 
-if data is not None and not data.empty:
-    # Menampilkan data dalam bentuk tabel di Streamlit
-    st.write("Data dari Oracle DB:")
-    st.dataframe(data)  # Menampilkan data dalam bentuk dataframe
-else:
-    st.write("Tidak ada data atau gagal menghubungkan ke DB")
+# Tombol untuk memicu output
+if st.button("Tampilkan Output"):
+    tampilkan_output()
